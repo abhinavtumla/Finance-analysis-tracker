@@ -1,0 +1,26 @@
+from pydantic import BaseModel, field_validator
+from decimal import Decimal
+from datetime import date, datetime
+
+class TransactionCreate(BaseModel):
+    category_id: int
+    amount: Decimal
+    description: str | None = None
+    transaction_date: date
+
+class TransactionUpdate(BaseModel):
+    category_id: int | None = None
+    amount: Decimal | None = None
+    description: str | None = None
+    transaction_date: date | None = None
+
+class TransactionResponse(BaseModel):
+    id: int
+    category_id: int
+    amount: Decimal
+    description: str | None = None
+    transaction_date: date
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
