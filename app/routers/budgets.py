@@ -51,6 +51,22 @@ def create_budget(
                 detail="Category not found"
             )
 
+    # The DB-level unique constraint doesn't catch this case: SQL treats every
+    # NULL in a unique constraint as distinct from every other NULL, so two
+    # "overall" (category_id=NULL) budgets for the same user/month/year would
+    # otherwise both insert successfully. Check explicitly instead.
+    existing_budget = db.query(Budget).filter(
+        Budget.user_id == current_user.id,
+        Budget.category_id == budget_data.category_id,
+        Budget.month == budget_data.month,
+        Budget.year == budget_data.year,
+    ).first()
+    if existing_budget:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A budget already exists for this category/month/year"
+        )
+
     new_budget = Budget(
         user_id=current_user.id,
         category_id=budget_data.category_id,

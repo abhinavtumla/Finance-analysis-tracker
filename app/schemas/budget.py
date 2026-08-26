@@ -25,4 +25,3 @@ class BudgetResponse(BaseModel):
 
     class Config:
         from_attributes = True
-        
