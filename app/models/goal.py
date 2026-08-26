@@ -13,6 +13,7 @@ class SavingsGoal(Base):
     target_amount = Column(Numeric(12, 2), nullable=False)
     current_amount = Column(Numeric(12, 2), nullable=False, default=0)
     target_date = Column(Date, nullable=True)
+    notes = Column(String, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
