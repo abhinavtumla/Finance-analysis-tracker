@@ -1,5 +1,7 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ApiError } from "../api/client";
+import { suggestCategory } from "../api/transactions";
+import { useAuth } from "../context/AuthContext";
 import type { CategoryResponse } from "../types/category";
 import type { TransactionCreatePayload } from "../types/transaction";
 import { toMagnitude, toSignedAmount } from "../utils/money";
@@ -28,6 +30,7 @@ export function TransactionForm({
   onSubmit,
   onCancel,
 }: TransactionFormProps) {
+  const { token } = useAuth();
   const [categoryId, setCategoryId] = useState<number | "">(initialValues?.category_id ?? "");
   const [magnitude, setMagnitude] = useState(
     initialValues ? toMagnitude(initialValues.amount) : "",
@@ -37,6 +40,11 @@ export function TransactionForm({
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Tracks whether the user has explicitly chosen a category, so the
+  // description-blur auto-suggestion below never overwrites a deliberate
+  // choice (including an existing category when editing).
+  const hasChosenCategory = useRef(initialValues !== undefined);
+
   // Re-sync the form whenever a different transaction is loaded for editing.
   useEffect(() => {
     setCategoryId(initialValues?.category_id ?? "");
@@ -44,9 +52,26 @@ export function TransactionForm({
     setDescription(initialValues?.description ?? "");
     setTransactionDate(initialValues?.transaction_date ?? today());
     setError(null);
+    hasChosenCategory.current = initialValues !== undefined;
   }, [initialValues]);
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
+
+  async function handleDescriptionBlur() {
+    if (!token || hasChosenCategory.current || !description.trim()) return;
+    try {
+      const suggestion = await suggestCategory(token, description);
+      // Only apply it if the user still hasn't picked a category by the
+      // time this comes back — they may have already chosen one manually
+      // while the request was in flight.
+      if (suggestion.category_id !== null && !hasChosenCategory.current) {
+        setCategoryId(suggestion.category_id);
+      }
+    } catch {
+      // Best-effort convenience feature — a failed suggestion just means no
+      // pre-fill happens, nothing to show the user.
+    }
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -64,9 +89,13 @@ export function TransactionForm({
         transaction_date: transactionDate,
       });
       if (!initialValues) {
-        // Creating a new transaction: clear the form for the next entry.
+        // Creating a new transaction: clear the form for the next entry,
+        // including the category so the next description gets its own
+        // fresh suggestion instead of inheriting this one.
+        setCategoryId("");
         setMagnitude("");
         setDescription("");
+        hasChosenCategory.current = false;
       }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to save transaction.");
@@ -81,7 +110,10 @@ export function TransactionForm({
         Category
         <select
           value={categoryId}
-          onChange={(event) => setCategoryId(Number(event.target.value))}
+          onChange={(event) => {
+            hasChosenCategory.current = true;
+            setCategoryId(Number(event.target.value));
+          }}
           required
         >
           <option value="" disabled>
@@ -111,6 +143,7 @@ export function TransactionForm({
           type="text"
           value={description ?? ""}
           onChange={(event) => setDescription(event.target.value)}
+          onBlur={handleDescriptionBlur}
         />
       </label>
       <label>

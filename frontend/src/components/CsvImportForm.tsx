@@ -45,7 +45,8 @@ export function CsvImportForm({ onImported }: CsvImportFormProps) {
       <h2>Import from CSV</h2>
       <p className="hint">
         Columns: <code>date</code> (YYYY-MM-DD), <code>description</code>, <code>category</code> (must match an
-        existing category name), <code>amount</code> (signed: positive for income, negative for expense).
+        existing category name, or leave blank to auto-suggest one from your transaction history), <code>amount</code>{" "}
+        (signed: positive for income, negative for expense).
       </p>
       <form className="transaction-form-actions" onSubmit={handleSubmit}>
         <input type="file" accept=".csv" ref={fileInputRef} required />

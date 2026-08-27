@@ -1,5 +1,6 @@
 import { apiRequest } from "./client";
 import type {
+  CategorySuggestionResponse,
   TransactionCreatePayload,
   TransactionFilters,
   TransactionImportSummary,
@@ -29,6 +30,14 @@ export function updateTransaction(token: string, id: number, payload: Transactio
 
 export function deleteTransaction(token: string, id: number) {
   return apiRequest<void>(`/transactions/${id}`, { method: "DELETE", token });
+}
+
+export function suggestCategory(token: string, description: string) {
+  return apiRequest<CategorySuggestionResponse>("/transactions/suggest-category", {
+    method: "POST",
+    body: { description },
+    token,
+  });
 }
 
 export function importTransactions(token: string, file: File) {

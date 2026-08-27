@@ -18,8 +18,11 @@ from app.schemas.transaction import (
     TransactionResponse,
     TransactionImportRowResult,
     TransactionImportSummary,
+    CategorySuggestionRequest,
+    CategorySuggestionResponse,
 )
 from app.core.dependencies import get_current_user
+from app.services.category_suggestion_service import suggest_category
 
 router = APIRouter(prefix="/transactions", tags=["Transactions"])
 
@@ -99,6 +102,19 @@ def list_transactions(
     return transactions
 
 
+@router.post("/suggest-category", response_model=CategorySuggestionResponse)
+def suggest_category_for_description(
+    request: CategorySuggestionRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    category = suggest_category(db, current_user.id, request.description)
+    return CategorySuggestionResponse(
+        category_id=category.id if category else None,
+        category_name=category.name if category else None,
+    )
+
+
 @router.post("/import", response_model=TransactionImportSummary)
 def import_transactions(
     file: UploadFile = File(...),
@@ -143,15 +159,16 @@ def import_transactions(
     imported_count = 0
 
     for line_number, row in enumerate(rows, start=2):  # data starts on line 2; line 1 is the header
-        error = _validate_import_row(row, categories_by_name)
+        category, amount, transaction_date, error = _resolve_import_row(
+            db, current_user.id, row, categories_by_name
+        )
         if error is None:
-            category = categories_by_name[(row.get("category") or "").strip().lower()]
             db.add(Transaction(
                 user_id=current_user.id,
                 category_id=category.id,
-                amount=Decimal(row["amount"].strip()),
+                amount=amount,
                 description=(row.get("description") or "").strip() or None,
-                transaction_date=date.fromisoformat(row["date"].strip()),
+                transaction_date=transaction_date,
             ))
             imported_count += 1
         results.append(TransactionImportRowResult(
@@ -170,29 +187,44 @@ def import_transactions(
     )
 
 
-def _validate_import_row(row: dict, categories_by_name: dict) -> Optional[str]:
-    """Return an error message if the row can't be imported, or None if it's valid."""
+def _resolve_import_row(
+    db: Session, user_id: int, row: dict, categories_by_name: dict
+) -> tuple[Optional[Category], Optional[Decimal], Optional[date], Optional[str]]:
+    """Validate one CSV row and resolve it to a (category, amount, date) triple.
+
+    Returns (None, None, None, error_message) if the row can't be imported.
+    """
     category_name = (row.get("category") or "").strip()
-    category = categories_by_name.get(category_name.lower())
-    if category is None:
-        return f"Unknown category '{category_name}'"
+    if category_name:
+        category = categories_by_name.get(category_name.lower())
+        if category is None:
+            return None, None, None, f"Unknown category '{category_name}'"
+    else:
+        # Blank category cell: try to guess one from the description instead
+        # of failing outright. A category name that just doesn't match
+        # anything (a typo) is still treated as an error, not a guess — the
+        # user clearly intended a specific category and we shouldn't
+        # second-guess a misspelling.
+        category = suggest_category(db, user_id, row.get("description") or "")
+        if category is None:
+            return None, None, None, "No category given and couldn't auto-suggest one from the description"
 
     try:
         amount = Decimal((row.get("amount") or "").strip())
     except InvalidOperation:
-        return f"Invalid amount '{row.get('amount')}'"
+        return None, None, None, f"Invalid amount '{row.get('amount')}'"
 
     if category.type == "expense" and amount > 0:
-        return "Expense transactions must have a negative amount"
+        return None, None, None, "Expense transactions must have a negative amount"
     if category.type == "income" and amount < 0:
-        return "Income transactions must have a positive amount"
+        return None, None, None, "Income transactions must have a positive amount"
 
     try:
-        date.fromisoformat((row.get("date") or "").strip())
+        transaction_date = date.fromisoformat((row.get("date") or "").strip())
     except ValueError:
-        return f"Invalid date '{row.get('date')}' (expected YYYY-MM-DD)"
+        return None, None, None, f"Invalid date '{row.get('date')}' (expected YYYY-MM-DD)"
 
-    return None
+    return category, amount, transaction_date, None
 
 
 @router.put("/{transaction_id}", response_model=TransactionResponse)

@@ -35,3 +35,10 @@ class TransactionImportSummary(BaseModel):
     imported_count: int
     failed_count: int
     results: list[TransactionImportRowResult]
+
+class CategorySuggestionRequest(BaseModel):
+    description: str
+
+class CategorySuggestionResponse(BaseModel):
+    category_id: int | None = None
+    category_name: str | None = None

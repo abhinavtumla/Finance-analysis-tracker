@@ -47,3 +47,8 @@ export interface TransactionImportSummary {
   failed_count: number;
   results: TransactionImportRowResult[];
 }
+
+export interface CategorySuggestionResponse {
+  category_id: number | null;
+  category_name: string | null;
+}
