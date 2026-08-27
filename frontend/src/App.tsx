@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { BudgetsPage } from "./pages/BudgetsPage";
+import { CategoriesPage } from "./pages/CategoriesPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { GoalsPage } from "./pages/GoalsPage";
 import { LoginPage } from "./pages/LoginPage";
@@ -29,6 +30,16 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <TransactionsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/categories"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <CategoriesPage />
             </Layout>
           </ProtectedRoute>
         }

@@ -15,6 +15,7 @@ export function Layout({ children }: { children: ReactNode }) {
               Dashboard
             </NavLink>
             <NavLink to="/transactions">Transactions</NavLink>
+            <NavLink to="/categories">Categories</NavLink>
             <NavLink to="/budgets">Budgets</NavLink>
             <NavLink to="/goals">Goals</NavLink>
           </nav>

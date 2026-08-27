@@ -7,3 +7,13 @@ export interface CategoryResponse {
   is_default: boolean;
   created_at: string;
 }
+
+export interface CategoryCreatePayload {
+  name: string;
+  type: string;
+}
+
+export interface CategoryUpdatePayload {
+  name?: string;
+  type?: string;
+}
