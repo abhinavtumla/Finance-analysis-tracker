@@ -1,15 +1,22 @@
 :root {
-  --text: #24292f;
-  --bg: #ffffff;
-  --border: #d0d7de;
-  --accent: #6b3bff;
-  --error: #cf222e;
+  --bg: #101012;
+  --surface: #18181b;
+  --surface-hover: #202024;
+  --border: #2a2a2f;
+  --text: #e8e8ea;
+  --text-muted: #8b8b93;
+  --accent: #5b6eff;
+  --accent-hover: #6d7eff;
+  --error: #f2707a;
+  --success: #4ade80;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Consolas, monospace;
 
   font: 16px/145% var(--sans);
   color: var(--text);
   background: var(--bg);
+  color-scheme: dark;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -27,18 +34,92 @@ body {
 }
 
 #root:has(.auth-page) {
-  max-width: 480px;
-  padding-top: 48px;
+  max-width: 420px;
+  padding-top: 64px;
 }
 
 h1 {
-  font-size: 28px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   margin: 0 0 24px;
 }
 
+h2 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+p {
+  margin: 0;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: var(--surface-hover);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+/* Buttons: a plain neutral style by default, with a distinct accent
+   treatment reserved for the one primary action per form. Keeping every
+   other button visually equal (Edit, Delete, Cancel, pagination, logout)
+   is the deliberate minimalist choice here, rather than color-coding every
+   action. */
 button {
   font: inherit;
   cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+button:hover {
+  background: var(--surface-hover);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.auth-page button[type='submit'],
+.transaction-form-actions button[type='submit'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.auth-page button[type='submit']:hover,
+.transaction-form-actions button[type='submit']:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+input,
+select {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+input:focus,
+select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+input::placeholder {
+  color: var(--text-muted);
 }
 
 .auth-page form {
@@ -53,27 +134,11 @@ button {
   gap: 4px;
   font-size: 14px;
   text-align: left;
+  color: var(--text-muted);
 }
 
-.auth-page input {
-  font: inherit;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
-
-.auth-page button[type='submit'] {
-  padding: 10px;
-  border: none;
-  border-radius: 6px;
-  background: var(--accent);
-  color: white;
-  font-weight: 600;
-}
-
-.auth-page button[type='submit']:disabled {
-  opacity: 0.6;
-  cursor: default;
+.auth-page a {
+  color: var(--accent);
 }
 
 .form-error {
@@ -85,38 +150,44 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 0;
+  gap: 40px;
+  padding: 18px 0;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .app-header-left {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 28px;
 }
 
 .app-title {
-  font-weight: 700;
-  font-size: 18px;
+  font-weight: 600;
+  font-size: 15px;
 }
 
 .app-nav {
   display: flex;
-  gap: 16px;
+  gap: 20px;
 }
 
 .app-nav a {
-  color: var(--text);
+  color: var(--text-muted);
   text-decoration: none;
   font-size: 14px;
   padding: 4px 0;
   border-bottom: 2px solid transparent;
+  transition: color 0.15s ease;
+}
+
+.app-nav a:hover {
+  color: var(--text);
 }
 
 .app-nav a.active {
+  color: var(--text);
   border-bottom-color: var(--accent);
-  font-weight: 600;
 }
 
 .app-header-right {
@@ -124,19 +195,13 @@ button {
   align-items: center;
   gap: 12px;
   font-size: 14px;
+  color: var(--text-muted);
 }
 
 .month-selector {
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
-}
-
-.month-selector select {
-  font: inherit;
-  padding: 6px 8px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
 }
 
 .summary-grid {
@@ -146,40 +211,37 @@ button {
 }
 
 .summary-card {
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 10px;
+  padding: 18px;
 }
 
 .summary-label {
   font-size: 13px;
-  color: #57606a;
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 
 .summary-value {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .budget-card {
   grid-column: 1 / -1;
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
-}
-
-.budget-card h2 {
-  font-size: 16px;
-  margin: 0 0 8px;
+  border-radius: 10px;
+  padding: 18px;
 }
 
 .progress-bar {
-  height: 8px;
-  background: #eaeef2;
+  height: 6px;
+  background: var(--border);
   border-radius: 999px;
   overflow: hidden;
-  margin: 8px 0;
+  margin: 10px 0;
 }
 
 .progress-bar-fill {
@@ -188,20 +250,16 @@ button {
 }
 
 .hint {
-  color: #57606a;
-  font-size: 14px;
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 .transaction-form-section {
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 10px;
+  padding: 18px;
   margin-bottom: 24px;
-}
-
-.transaction-form-section h2 {
-  font-size: 16px;
-  margin: 0 0 12px;
 }
 
 .transaction-form {
@@ -215,29 +273,14 @@ button {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 14px;
-}
-
-.transaction-form input,
-.transaction-form select {
-  font: inherit;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 .transaction-form-actions {
   display: flex;
   gap: 8px;
-}
-
-.transaction-form-actions button[type='submit'] {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  background: var(--accent);
-  color: white;
-  font-weight: 600;
+  align-items: center;
 }
 
 .transaction-filters {
@@ -246,23 +289,25 @@ button {
   margin-bottom: 16px;
 }
 
-.transaction-filters input,
-.transaction-filters select {
-  font: inherit;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
-
 .transaction-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.transaction-table th,
-.transaction-table td {
+.transaction-table th {
   text-align: left;
   padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.transaction-table td {
+  text-align: left;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border);
   font-size: 14px;
 }
@@ -272,7 +317,7 @@ button {
 }
 
 .amount-positive {
-  color: #1a7f37;
+  color: var(--success);
 }
 
 .transaction-actions {
@@ -285,6 +330,8 @@ button {
   align-items: center;
   gap: 12px;
   margin-top: 16px;
+  color: var(--text-muted);
+  font-size: 14px;
 }
 
 .budget-list {
@@ -298,4 +345,5 @@ button {
   justify-content: space-between;
   align-items: flex-start;
   gap: 8px;
+  margin-bottom: 4px;
 }
