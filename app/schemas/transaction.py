@@ -24,3 +24,14 @@ class TransactionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class TransactionImportRowResult(BaseModel):
+    row_number: int  # 1-indexed, counting the header row, so it matches what a spreadsheet shows
+    status: str  # "imported" or "failed"
+    error: str | None = None
+
+class TransactionImportSummary(BaseModel):
+    total_rows: int
+    imported_count: int
+    failed_count: int
+    results: list[TransactionImportRowResult]

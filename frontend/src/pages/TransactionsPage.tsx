@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ApiError } from "../api/client";
 import { fetchCategories } from "../api/categories";
 import { createTransaction, deleteTransaction, fetchTransactions, updateTransaction } from "../api/transactions";
+import { CsvImportForm } from "../components/CsvImportForm";
 import { TransactionForm } from "../components/TransactionForm";
 import { useAuth } from "../context/AuthContext";
 import type { CategoryResponse } from "../types/category";
@@ -88,6 +89,13 @@ export function TransactionsPage() {
           onCancel={editingTransaction ? () => setEditingTransaction(null) : undefined}
         />
       </section>
+
+      <CsvImportForm
+        onImported={() => {
+          setPage(0);
+          reloadTransactions();
+        }}
+      />
 
       <section className="transaction-filters">
         <input

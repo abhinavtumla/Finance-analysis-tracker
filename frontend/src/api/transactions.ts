@@ -2,6 +2,7 @@ import { apiRequest } from "./client";
 import type {
   TransactionCreatePayload,
   TransactionFilters,
+  TransactionImportSummary,
   TransactionResponse,
   TransactionUpdatePayload,
 } from "../types/transaction";
@@ -28,4 +29,14 @@ export function updateTransaction(token: string, id: number, payload: Transactio
 
 export function deleteTransaction(token: string, id: number) {
   return apiRequest<void>(`/transactions/${id}`, { method: "DELETE", token });
+}
+
+export function importTransactions(token: string, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiRequest<TransactionImportSummary>("/transactions/import", {
+    method: "POST",
+    body: formData,
+    token,
+  });
 }

@@ -34,3 +34,16 @@ export interface TransactionFilters {
   skip?: number;
   limit?: number;
 }
+
+export interface TransactionImportRowResult {
+  row_number: number;
+  status: "imported" | "failed";
+  error: string | null;
+}
+
+export interface TransactionImportSummary {
+  total_rows: number;
+  imported_count: number;
+  failed_count: number;
+  results: TransactionImportRowResult[];
+}
